@@ -95,7 +95,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <textarea id="keywordInput" placeholder="Nhập từ khóa (mỗi dòng 1 từ)..." class="w-full p-3 border rounded-lg focus:border-blue-400 outline-none text-sm"></textarea>
-                        <button onclick="formatOnly()" class="w-full mt-2 bg-slate-800 hover:bg-black text-white py-2 rounded-lg text-sm font-bold transition-all">Xử lý dấu ";"</button>
+                        <button onclick="formatOnly()" class="w-full mt-2 bg-slate-800 hover:bg-black text-white py-2 rounded-lg text-sm font-bold transition-all">Xử lý dấu ";" & Xóa trùng lặp</button>
                     </div>
                     <div class="relative">
                         <div id="out-keyword" contenteditable="true" oninput="updateStats('keyword')" class="output-box h-full">...</div>
@@ -266,8 +266,23 @@
         function formatOnly() {
             const input = document.getElementById('keywordInput').value;
             if(!input) return;
-            const lines = input.split('\n').filter(line => line.trim() !== "");
-            const result = lines.join('; ');
+            
+            // Cắt khoảng trắng hai đầu và lọc bỏ các dòng trống
+            const lines = input.split('\n').map(line => line.trim()).filter(line => line !== "");
+            
+            // Xóa trùng lặp (không phân biệt hoa/thường) nhưng giữ nguyên format của từ đầu tiên
+            const seen = new Set();
+            const uniqueLines = [];
+            
+            for (const line of lines) {
+                const lowerLine = line.toLowerCase();
+                if (!seen.has(lowerLine)) {
+                    seen.add(lowerLine);
+                    uniqueLines.push(line);
+                }
+            }
+
+            const result = uniqueLines.join('; ');
             document.getElementById('out-keyword').innerText = result; 
             updateStats('keyword');
         }
